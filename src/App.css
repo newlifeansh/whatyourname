@@ -1,0 +1,730 @@
+#root {
+  width: 100%;
+  min-height: 100vh;
+  box-sizing: border-box;
+  background-color: #ffffff;
+}
+
+@media (min-width: 481px) {
+  #root {
+    max-width: 480px;
+    margin: 0 auto;
+  }
+}
+
+.landing {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+/* 배경 데코 (파스텔 블루 도형) */
+.bg-deco {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.blob {
+  position: absolute;
+  background: #d8ecff;
+  border-radius: 40% 60% 55% 45% / 50% 40% 60% 50%;
+  opacity: 0.85;
+}
+
+.blob-1 {
+  width: 140px;
+  height: 140px;
+  top: -30px;
+  left: -40px;
+  background: #cfe6ff;
+}
+.blob-2 {
+  width: 90px;
+  height: 90px;
+  top: 40px;
+  right: -20px;
+  background: #e3f0ff;
+}
+.blob-3 {
+  width: 70px;
+  height: 70px;
+  top: 180px;
+  left: 24px;
+  background: #e3f0ff;
+}
+.blob-4 {
+  width: 110px;
+  height: 110px;
+  top: 120px;
+  right: -30px;
+  background: #cfe6ff;
+}
+
+/* 로고: iPhone mini(375) 기준 left:36 top:76 size:319x319.
+   다른 폭에서는 동일 비율로 보이도록 vw 단위로 환산한다. */
+.logo {
+  position: absolute;
+  left: calc((36 / 375) * 100vw);
+  top: calc((76 / 375) * 100vw);
+  width: calc((319 / 375) * 100vw);
+  height: calc((319 / 375) * 100vw);
+  max-width: 319px;
+  max-height: 319px;
+  object-fit: contain;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* 카피 — 로고 바로 아래 */
+.copy {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc((76 + 319 + 0) / 375 * 100vw);
+  margin: 0;
+  padding: 0 24px;
+  text-align: center;
+  font-size: 20px;
+  line-height: 1.5;
+  font-weight: 700;
+  color: #4e5968;
+  z-index: 2;
+}
+
+/* 팝콘 캐릭터 등장 영역 — 카피 아래 10px + CTA 위 10px */
+.popcorn-area {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc((76 + 319 + 0) / 375 * 100vw + 74px + 10px);
+  bottom: 110px; /* 하단 CTA(~100px) + 10px 여백 */
+  pointer-events: none;
+  z-index: 1;
+}
+
+@media (min-width: 481px) {
+  .logo {
+    left: calc(50% - 480px / 2 + (36 / 375) * 480px);
+    top: calc((76 / 375) * 480px);
+    width: calc((319 / 375) * 480px);
+    height: calc((319 / 375) * 480px);
+    max-width: none;
+    max-height: none;
+  }
+  .copy {
+    top: calc((76 + 319 + 0) / 375 * 480px);
+  }
+  .popcorn-area {
+    top: calc((76 + 319 + 0) / 375 * 480px + 74px + 10px);
+  }
+}
+
+.pop {
+  position: absolute;
+  object-fit: contain;
+  transform: scale(0);
+  opacity: 0;
+  animation: popIn 2s ease-in-out forwards;
+}
+
+@keyframes popIn {
+  0% {
+    transform: scale(0) translateY(10px);
+    opacity: 0;
+  }
+  20% {
+    transform: scale(1.2) translateY(-6px);
+    opacity: 1;
+  }
+  35% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+  75% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.4) translateY(8px);
+    opacity: 0;
+  }
+}
+
+.cta-inner {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.flag {
+  font-size: 20px;
+}
+
+/* ───────── Step 공통 ───────── */
+.step {
+  position: relative;
+  min-height: 100vh;
+  background: #ffffff;
+  padding-bottom: 140px;
+}
+
+.step-field {
+  padding: 8px 24px 0;
+  cursor: pointer;
+}
+
+.step-field-gap {
+  margin-top: 26px;
+}
+
+/* ───────── Step: 인풋 박스 (생년월일/시간) ───────── */
+.input-box {
+  background: #f2f4f6;
+  border: 1.5px solid #e5e8eb;
+  border-radius: 14px;
+  padding: 18px 20px;
+  font-size: 22px;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.input-box:active {
+  border-color: #3182f6;
+}
+
+.input-box.disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.input-value {
+  color: #191f28;
+  font-weight: 600;
+}
+
+.input-placeholder {
+  color: #aeb5bc;
+  font-weight: 400;
+}
+
+/* ───────── Step: Fake Input (키패드 방지) ───────── */
+.fake-input {
+  cursor: pointer;
+  padding: 4px 0 0;
+}
+
+.fake-input.disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.fake-input-label {
+  display: block;
+  font-size: 13px;
+  color: #8b95a1;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.fake-input-value {
+  display: block;
+  font-size: 22px;
+  font-weight: 500;
+  color: #191f28;
+  padding-bottom: 10px;
+}
+
+.fake-input-value.placeholder {
+  color: #c4c9d0;
+}
+
+.fake-input-line {
+  height: 2px;
+  background: #e5e8eb;
+  border-radius: 1px;
+  transition: background 0.15s ease;
+}
+
+.fake-input:active .fake-input-line {
+  background: #3182f6;
+}
+
+/* ───────── Step: 성별 카드 ───────── */
+.gender-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 16px 24px 0;
+}
+
+.gender-card {
+  appearance: none;
+  border: 1.5px solid #e5e8eb;
+  background: #f9fafb;
+  border-radius: 16px;
+  padding: 32px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.05s ease;
+}
+
+.gender-card:active {
+  transform: scale(0.98);
+}
+
+.gender-card.selected {
+  border-color: #3182f6;
+  background: #eff6ff;
+}
+
+.gender-img {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+}
+
+.gender-label {
+  font-size: 20px;
+  font-weight: 600;
+  color: #191f28;
+}
+
+/* ───────── Step: 시간 모름 체크박스 ───────── */
+.unknown-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 24px 4px 0;
+  font-size: 15px;
+  color: #4e5968;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* ───────── Wheel Picker (TDS BottomSheet 데이트픽커 스타일) ───────── */
+.wheel-wrap {
+  position: relative;
+  margin: 8px 0 16px;
+}
+
+.wheel-cols {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  gap: 14px;
+  height: 100%;
+  padding: 0 24px;
+}
+
+/* 가운데 선택 행 — column 그룹 영역 안쪽에만 (좌우 24px 패딩 제외) */
+.wheel-selected-row {
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  top: calc(50% - 26px);
+  height: 52px;
+  background: #f9fafb;
+  border-radius: 10px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.wheel-col {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  min-width: 0;
+}
+
+.wheel-col::-webkit-scrollbar {
+  display: none;
+}
+
+.wheel-item {
+  display: flex;
+  align-items: center;
+  font-size: 22px;
+  font-weight: 500;
+  color: #d1d6db;
+  scroll-snap-align: center;
+  font-variant-numeric: tabular-nums;
+  transition: color 0.15s ease;
+  white-space: nowrap;
+}
+
+.wheel-align-left .wheel-item {
+  justify-content: flex-start;
+}
+.wheel-align-center .wheel-item {
+  justify-content: center;
+}
+.wheel-align-right .wheel-item {
+  justify-content: flex-end;
+}
+
+.wheel-item.selected {
+  color: #191f28;
+}
+
+/* ───────── Simple BottomSheet ───────── */
+.sheet-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 9999;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: sheetFadeIn 0.2s ease;
+}
+
+@keyframes sheetFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.sheet-panel {
+  background: #fff;
+  border-radius: 20px 20px 0 0;
+  width: 100%;
+  max-width: 480px;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  animation: sheetSlideUp 0.25s ease;
+}
+
+@keyframes sheetSlideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.sheet-handle {
+  width: 36px;
+  height: 4px;
+  background: #d1d6db;
+  border-radius: 2px;
+  margin: 12px auto 0;
+}
+
+.sheet-header {
+  font-size: 19px;
+  font-weight: 700;
+  color: #191f28;
+  padding: 20px 24px 8px;
+}
+
+.sheet-body {
+  /* body는 children이 채움 */
+}
+
+/* ───────── 로딩 화면 ───────── */
+.loading-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: #fff;
+  padding: 40px 24px;
+  gap: 24px;
+}
+
+.loading-emoji-wrap {
+  animation: loadingBounce 2s ease-in-out infinite;
+}
+
+@keyframes loadingBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+.loading-emoji {
+  width: 240px;
+  height: 240px;
+  object-fit: contain;
+  margin-top: -30px;
+}
+
+.loading-msg {
+  font-size: 18px;
+  font-weight: 600;
+  color: #191f28;
+  text-align: center;
+  min-height: 28px;
+  transition: opacity 0.3s ease;
+}
+
+.loading-bar-wrap {
+  width: 100%;
+  max-width: 260px;
+  height: 6px;
+  background: #e5e8eb;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.loading-bar-fill {
+  height: 100%;
+  background: #3182f6;
+  border-radius: 3px;
+  transition: width 0.15s ease;
+}
+
+.loading-pct {
+  font-size: 14px;
+  color: #8b95a1;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ───────── Result: 사주 오행 요약 ───────── */
+.saju-summary {
+  margin: 24px 24px 0;
+  background: #f9fafb;
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.saju-summary-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #8b95a1;
+  margin-bottom: 14px;
+}
+
+.saju-elements {
+  display: flex;
+  gap: 8px;
+}
+
+.saju-el {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 0;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.saju-el.weak {
+  background: #fff0f0;
+}
+
+.saju-el.strong {
+  background: #eff6ff;
+}
+
+.saju-el-name {
+  font-size: 12px;
+  color: #8b95a1;
+  font-weight: 500;
+}
+
+.saju-el-count {
+  font-size: 20px;
+  font-weight: 700;
+  color: #191f28;
+}
+
+.saju-el.weak .saju-el-count {
+  color: #e55b5b;
+}
+
+.saju-el.strong .saju-el-count {
+  color: #3182f6;
+}
+
+.saju-weak-msg {
+  margin-top: 12px;
+  font-size: 14px;
+  color: #e55b5b;
+  font-weight: 500;
+  text-align: center;
+}
+
+/* ───────── Result: 포켓몬 카드 슬라이드 ───────── */
+.name-cards {
+  display: none; /* 미사용, poke-slide로 대체 */
+}
+
+.poke-slide {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding: 24px 24px 8px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.poke-slide::-webkit-scrollbar {
+  display: none;
+}
+
+.poke-card {
+  flex-shrink: 0;
+  width: 82%;
+  border: 2px solid;
+  border-radius: 20px;
+  scroll-snap-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 20px 24px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+}
+
+.poke-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.poke-card-rank {
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+.poke-card-element {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.poke-card-avatar {
+  margin-bottom: 12px;
+}
+
+.poke-card-avatar-ring {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 3px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.poke-card-avatar-img {
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
+}
+
+.poke-card-name {
+  font-size: 32px;
+  font-weight: 800;
+  color: #191f28;
+  letter-spacing: -0.5px;
+}
+
+.poke-card-pron {
+  font-size: 16px;
+  color: #8b95a1;
+  margin-top: 2px;
+}
+
+.poke-card-divider {
+  width: 100%;
+  border-top: 1.5px dashed;
+  margin: 16px 0;
+}
+
+.poke-card-info {
+  width: 100%;
+  text-align: center;
+}
+
+.poke-card-meaning {
+  font-size: 15px;
+  color: #4e5968;
+  line-height: 1.5;
+}
+
+.poke-card-reason {
+  font-size: 15px;
+  font-weight: 700;
+  margin-top: 8px;
+  line-height: 1.5;
+}
+
+.poke-card-footer {
+  width: 100%;
+  text-align: center;
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.poke-card-personality {
+  font-size: 14px;
+  color: #4e5968;
+}
+
+.poke-card-celeb {
+  font-size: 13px;
+  color: #8b95a1;
+}
+
+/* 인디케이터 */
+.poke-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 0 4px;
+}
+
+.poke-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #d1d6db;
+  transition: all 0.2s ease;
+}
+
+.poke-dot.active {
+  width: 24px;
+  border-radius: 4px;
+  background: #3182f6;
+}
+
+/* ───────── Result: 오행 팁 ───────── */
+.element-tip {
+  margin: 0 24px 24px;
+  background: #eff6ff;
+  border-radius: 14px;
+  padding: 18px 20px;
+}
+
+.element-tip-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #191f28;
+  margin-bottom: 6px;
+}
+
+.element-tip-desc {
+  font-size: 14px;
+  color: #4e5968;
+  line-height: 1.5;
+}
