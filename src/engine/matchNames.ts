@@ -6,7 +6,7 @@ import type { Element, SajuResult } from "./saju";
 export interface NameRecommendation {
   name: EnglishName;
   score: number;
-  reason: string; // 매칭 이유
+  reason: string;
 }
 
 export function matchNames(
@@ -19,50 +19,77 @@ export function matchNames(
 
   const scored = candidates.map((name) => {
     let score = 0;
-    let reasons: string[] = [];
+    const reasons: string[] = [];
 
-    // 1. 부족한 오행 보완 (가장 높은 가산점)
+    // 1. 부족한 오행 보완
     for (const weakEl of saju.weakElements) {
       if (name.elements.includes(weakEl)) {
-        score += 30;
+        score += 40;
         reasons.push(`부족한 ${elementKo(weakEl)}의 기운을 채워줘요`);
       }
     }
 
-    // 2. 일간(나의 본질) 상생 관계
-    const helpingElements = getHelpingElements(saju.dayStemElement);
-    for (const helpEl of helpingElements) {
-      if (name.elements.includes(helpEl)) {
-        score += 15;
+    // 2. 완전히 빈(0개) 오행 보완 보너스
+    for (const el of name.elements) {
+      if (saju.elementCounts[el] === 0) {
+        score += 20;
         if (!reasons.length) {
-          reasons.push(
-            `${elementKo(saju.dayStemElement)} 일간과 조화로운 ${elementKo(helpEl)}의 에너지`,
-          );
+          reasons.push(`비어있는 ${elementKo(el)}의 기운을 보충해줘요`);
         }
       }
     }
 
-    // 3. 과잉 오행은 감점
-    for (const strongEl of saju.strongElements) {
-      if (name.elements.includes(strongEl)) {
-        score -= 10;
+    // 3. 일간 상생 관계 (나를 생해주는 오행)
+    const helpingEl = getHelpingElement(saju.dayStemElement);
+    if (name.elements.includes(helpingEl)) {
+      score += 15;
+      if (!reasons.length) {
+        reasons.push(
+          `${elementKo(saju.dayStemElement)} 일간과 조화로운 ${elementKo(helpingEl)}의 에너지`,
+        );
       }
     }
 
-    // 4. 약간의 랜덤성 (동점일 때 다양성)
-    score += Math.random() * 5;
+    // 4. 일간이 생해주는 오행 (식상)
+    const producingEl = getProducingElement(saju.dayStemElement);
+    if (name.elements.includes(producingEl)) {
+      score += 8;
+      if (!reasons.length) {
+        reasons.push(
+          `${elementKo(saju.dayStemElement)}에서 뻗어나가는 ${elementKo(producingEl)}의 조화`,
+        );
+      }
+    }
+
+    // 5. 과잉 오행 감점
+    for (const strongEl of saju.strongElements) {
+      if (name.elements.includes(strongEl)) {
+        score -= 25;
+      }
+    }
+
+    // 6. 오행 분포에 따른 세밀 점수
+    // 각 이름의 오행이 사주에서 적을수록 높은 점수
+    for (const el of name.elements) {
+      const count = saju.elementCounts[el];
+      score += Math.max(0, 5 - count) * 3; // 0개=+15, 1개=+12, 2개=+9, 3개=+6 ...
+    }
+
+    // 7. 사주 기반 결정적 셔플 (핵심!)
+    // 같은 사주면 같은 결과, 다른 사주면 다른 결과
+    // 변동폭을 충분히 크게 (0~30) → 동점 이름들 사이 순위가 바뀜
+    const nameHash = hashString(name.name + saju.yearPillar + saju.monthPillar + saju.dayPillar + (saju.timePillar ?? ""));
+    score += nameHash % 30;
 
     const reason = reasons.length > 0 ? reasons[0] : "당신의 사주와 잘 어울려요";
 
     return { name, score, reason };
   });
 
-  // 점수 높은 순 정렬 → 상위 3개
   scored.sort((a, b) => b.score - a.score);
   return scored.slice(0, 3);
 }
 
-// 오행 한글 이름
 function elementKo(el: Element): string {
   const map: Record<Element, string> = {
     wood: "목(木)",
@@ -74,16 +101,32 @@ function elementKo(el: Element): string {
   return map[el];
 }
 
-// 상생 관계: 나를 도와주는 오행
-// 목→화, 화→토, 토→금, 금→수, 수→목
-// "나를 생해주는 것" = 인성 (나를 낳아주는 것)
-function getHelpingElements(myElement: Element): Element[] {
-  const generating: Record<Element, Element> = {
-    wood: "water", // 수생목
-    fire: "wood", // 목생화
-    earth: "fire", // 화생토
-    metal: "earth", // 토생금
-    water: "metal", // 금생수
+function getHelpingElement(myElement: Element): Element {
+  const map: Record<Element, Element> = {
+    wood: "water",
+    fire: "wood",
+    earth: "fire",
+    metal: "earth",
+    water: "metal",
   };
-  return [generating[myElement]];
+  return map[myElement];
+}
+
+function getProducingElement(myElement: Element): Element {
+  const map: Record<Element, Element> = {
+    wood: "fire",
+    fire: "earth",
+    earth: "metal",
+    metal: "water",
+    water: "wood",
+  };
+  return map[myElement];
+}
+
+function hashString(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash * 31 + str.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash);
 }
