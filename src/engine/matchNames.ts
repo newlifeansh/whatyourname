@@ -1,6 +1,7 @@
 import type { Gender } from "../types";
 import type { EnglishName } from "./nameDb";
 import { NAME_DB } from "./nameDb";
+import { getPhoneticElements } from "./phonetic";
 import type { Element, SajuResult } from "./saju";
 
 export interface NameRecommendation {
@@ -61,7 +62,31 @@ export function matchNames(
       }
     }
 
-    // 5. 과잉 오행 감점
+    // 5. 발음 기반 오행 점수 (초성 오행)
+    const phoneticEls = getPhoneticElements(name.name);
+    for (const pEl of phoneticEls) {
+      // 발음 오행이 부족한 오행을 보완하면 가산
+      if (saju.weakElements.includes(pEl)) {
+        score += 25;
+        if (!reasons.length) {
+          reasons.push(`'${name.name[0]}' 발음이 부족한 ${elementKo(pEl)}의 기운을 보충해요`);
+        }
+      }
+      // 발음 오행이 빈 오행(0개)이면 추가 보너스
+      if (saju.elementCounts[pEl] === 0) {
+        score += 12;
+      }
+      // 발음 오행이 일간 상생이면 가산
+      if (pEl === helpingEl) {
+        score += 10;
+      }
+      // 발음 오행이 과잉이면 감점
+      if (saju.strongElements.includes(pEl)) {
+        score -= 15;
+      }
+    }
+
+    // 6. 과잉 오행 감점 (의미 기반)
     for (const strongEl of saju.strongElements) {
       if (name.elements.includes(strongEl)) {
         score -= 25;

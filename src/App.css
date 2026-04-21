@@ -667,6 +667,12 @@
   line-height: 1.5;
 }
 
+.poke-card-phonetic {
+  font-size: 13px;
+  color: #8b95a1;
+  margin-top: 6px;
+}
+
 .poke-card-footer {
   width: 100%;
   text-align: center;

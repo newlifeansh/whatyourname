@@ -2,6 +2,7 @@ import { FixedBottomCTA, Top } from "@toss/tds-mobile";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { trackEvent } from "../engine/analytics";
 import { matchNames } from "../engine/matchNames";
+import { getPhoneticExplanation } from "../engine/phonetic";
 import type { Element } from "../engine/saju";
 import { ELEMENT_NAMES, ELEMENT_TRAITS, calculateSaju } from "../engine/saju";
 import type { SajuInput } from "../types";
@@ -180,6 +181,9 @@ export function Result({ input }: Props) {
                 <div className="poke-card-meaning">{rec.name.meaning}</div>
                 <div className="poke-card-reason" style={{ color: colors.accent }}>
                   {rec.reason}
+                </div>
+                <div className="poke-card-phonetic">
+                  🔤 {getPhoneticExplanation(rec.name.name)}
                 </div>
               </div>
 
