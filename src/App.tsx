@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "./App.css";
+import { showInterstitialAd } from "./engine/ad";
 import { Landing } from "./screens/Landing";
 import { Loading } from "./screens/Loading";
 import { Result } from "./screens/Result";
@@ -17,6 +18,13 @@ function App() {
     birthDate: "",
     birthTime: "",
   });
+
+  const handleAdThenLoading = () => {
+    // 전면 광고 표시 → 광고 끝나면 로딩으로
+    showInterstitialAd(() => {
+      setStep("loading");
+    });
+  };
 
   switch (step) {
     case "landing":
@@ -42,7 +50,7 @@ function App() {
         <StepBirthTime
           value={input.birthTime}
           onChange={(v) => setInput((i) => ({ ...i, birthTime: v }))}
-          onSubmit={() => setStep("loading")}
+          onSubmit={handleAdThenLoading}
         />
       );
     case "loading":

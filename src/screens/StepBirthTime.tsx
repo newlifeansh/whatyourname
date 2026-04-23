@@ -77,7 +77,7 @@ export function StepBirthTime({ value, onChange, onSubmit }: Props) {
       />
 
       <FixedBottomCTA onClick={onSubmit} disabled={!valid}>
-        영어 이름 추천 받기
+        광고보고 결과보기
       </FixedBottomCTA>
     </div>
   );
