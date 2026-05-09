@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const MESSAGES = [
   "오행의 균형을 확인하고 있어요...",
@@ -13,29 +13,51 @@ interface Props {
 
 export function Loading({ onDone }: Props) {
   const [msgIdx, setMsgIdx] = useState(0);
-  const [progress, setProgress] = useState(0.2); // 20%부터 시작
+  const [progress, setProgress] = useState(0.8);
+  const onDoneRef = useRef(onDone);
+  onDoneRef.current = onDone;
 
   useEffect(() => {
-    const duration = 5000; // 5초
-    const startProgress = 0.2; // 20%
+    const duration = 5000;
+    const startProgress = 0.8;
     const start = Date.now();
+    let finished = false;
+
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      setProgress(1);
+      setMsgIdx(MESSAGES.length - 1);
+      onDoneRef.current();
+    };
 
     const timer = setInterval(() => {
       const elapsed = Date.now() - start;
       const pct = Math.min(elapsed / duration, 1);
-      // 20% → 100% 범위로 매핑
       const displayProgress = startProgress + pct * (1 - startProgress);
       setProgress(displayProgress);
       setMsgIdx(Math.min(Math.floor(pct * MESSAGES.length), MESSAGES.length - 1));
 
       if (pct >= 1) {
         clearInterval(timer);
-        onDone();
+        finish();
       }
     }, 100);
 
-    return () => clearInterval(timer);
-  }, [onDone]);
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible" && Date.now() - start >= duration) {
+        clearInterval(timer);
+        finish();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
 
   return (
     <div className="loading-screen">

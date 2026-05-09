@@ -1,14 +1,11 @@
-import { GoogleAdMob } from "@apps-in-toss/web-framework";
+import { loadFullScreenAd, showFullScreenAd } from "@apps-in-toss/web-framework";
 
-const AD_GROUP_ID = "ait.v2.live.fa85f76de967462c";
+const AD_RESULT = "ait.v2.live.fa85f76de967462c";
+const AD_UNLOCK = "ait.v2.live.42f2dcdfd8fc481d";
 
-/**
- * 앱인토스 전면형 광고를 로드하고 표시
- * 광고가 끝나면 (또는 실패하면) onDone 호출
- */
-export function showInterstitialAd(onDone: () => void) {
+function showAd(adGroupId: string, onDone: () => void) {
   try {
-    if (!GoogleAdMob.loadAppsInTossAdMob.isSupported?.()) {
+    if (!loadFullScreenAd.isSupported?.()) {
       onDone();
       return;
     }
@@ -21,25 +18,48 @@ export function showInterstitialAd(onDone: () => void) {
       }
     };
 
-    GoogleAdMob.loadAppsInTossAdMob({
-      options: { adGroupId: AD_GROUP_ID },
+    // 10초 타임아웃 (최후의 안전망)
+    const timeout = setTimeout(finish, 10000);
+
+    loadFullScreenAd({
+      options: { adGroupId },
       onEvent: (event) => {
         if (event.type === "loaded") {
-          // 광고 로드 완료 → 표시
-          GoogleAdMob.showAppsInTossAdMob({
+          showFullScreenAd({
+            options: { adGroupId },
             onEvent: (showEvent) => {
-              // dismissed = 사용자가 광고를 닫음
-              if (showEvent.type === "dismissed") {
+              if (
+                showEvent.type === "dismissed" ||
+                showEvent.type === "clicked" ||
+                showEvent.type === "failedToShow"
+              ) {
+                clearTimeout(timeout);
                 finish();
               }
             },
-            onError: () => finish(),
+            onError: () => {
+              clearTimeout(timeout);
+              finish();
+            },
           });
         }
       },
-      onError: () => finish(),
+      onError: () => {
+        clearTimeout(timeout);
+        finish();
+      },
     });
   } catch {
     onDone();
   }
+}
+
+/** 결과 보기 전 광고 */
+export function showInterstitialAd(onDone: () => void) {
+  showAd(AD_RESULT, onDone);
+}
+
+/** 7개 더보기 잠금해제 광고 */
+export function showUnlockAd(onDone: () => void) {
+  showAd(AD_UNLOCK, onDone);
 }

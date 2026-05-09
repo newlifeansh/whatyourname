@@ -22,8 +22,11 @@ export function WheelColumn({
   const ref = useRef<HTMLDivElement>(null);
   const settleTimer = useRef<number | null>(null);
   const lastNotifiedIdx = useRef<number>(-1);
+  const isUserScrolling = useRef(false);
 
+  // value 변경 시 해당 위치로 스크롤
   useEffect(() => {
+    if (isUserScrolling.current) return;
     const idx = items.findIndex((i) => i === value);
     if (idx < 0) return;
     const el = ref.current;
@@ -35,11 +38,22 @@ export function WheelColumn({
     }
   }, [value, items]);
 
+  const scrollToIndex = (idx: number) => {
+    const el = ref.current;
+    if (!el) return;
+    const clamped = Math.max(0, Math.min(items.length - 1, idx));
+    el.scrollTo({ top: clamped * ITEM_HEIGHT, behavior: "smooth" });
+    lastNotifiedIdx.current = clamped;
+    onChange(items[clamped]);
+  };
+
   const handleScroll = () => {
+    isUserScrolling.current = true;
     if (settleTimer.current != null) {
       window.clearTimeout(settleTimer.current);
     }
     settleTimer.current = window.setTimeout(() => {
+      isUserScrolling.current = false;
       const el = ref.current;
       if (!el) return;
       const idx = Math.round(el.scrollTop / ITEM_HEIGHT);
@@ -52,7 +66,12 @@ export function WheelColumn({
         lastNotifiedIdx.current = clamped;
         onChange(items[clamped]);
       }
-    }, 80);
+    }, 150); // 80ms → 150ms (모바일 관성 스크롤 대기)
+  };
+
+  // 아이템 클릭 → 해당 값으로 바로 이동
+  const handleItemClick = (idx: number) => {
+    scrollToIndex(idx);
   };
 
   return (
@@ -69,6 +88,7 @@ export function WheelColumn({
             key={idx}
             className={`wheel-item ${selected ? "selected" : ""}`}
             style={{ height: ITEM_HEIGHT }}
+            onClick={() => handleItemClick(idx)}
           >
             {it}
             {suffix ?? ""}

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import "./App.css";
 import { showInterstitialAd } from "./engine/ad";
 import { Landing } from "./screens/Landing";
@@ -11,6 +11,8 @@ import type { Gender, SajuInput } from "./types";
 
 type Step = "landing" | "gender" | "birthDate" | "birthTime" | "loading" | "result";
 
+const STEP_ORDER: Step[] = ["landing", "gender", "birthDate", "birthTime", "loading", "result"];
+
 function App() {
   const [step, setStep] = useState<Step>("landing");
   const [input, setInput] = useState<SajuInput>({
@@ -18,13 +20,42 @@ function App() {
     birthDate: "",
     birthTime: "",
   });
+  const stepRef = useRef(step);
+  stepRef.current = step;
 
-  const handleAdThenLoading = () => {
-    // 전면 광고 표시 → 광고 끝나면 로딩으로
+  // 뒤로가기 처리
+  useEffect(() => {
+    try {
+      const { graniteEvent } = require("@apps-in-toss/web-framework");
+      if (!graniteEvent?.addEventListener) return;
+
+      const unsubscribe = graniteEvent.addEventListener("backEvent", {
+        onEvent: () => {
+          const currentStep = stepRef.current;
+          const idx = STEP_ORDER.indexOf(currentStep);
+
+          if (currentStep === "loading" || currentStep === "result") {
+            // 로딩/결과에서는 처음으로
+            setStep("landing");
+            setInput({ gender: null, birthDate: "", birthTime: "" });
+          } else if (idx > 0) {
+            setStep(STEP_ORDER[idx - 1]);
+          }
+          // landing에서는 기본 동작(앱 종료)
+        },
+      });
+
+      return unsubscribe;
+    } catch {
+      // 웹 환경에서는 graniteEvent 미지원 → 무시
+    }
+  }, []);
+
+  const handleAdThenLoading = useCallback(() => {
     showInterstitialAd(() => {
       setStep("loading");
     });
-  };
+  }, []);
 
   switch (step) {
     case "landing":

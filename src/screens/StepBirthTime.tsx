@@ -76,8 +76,16 @@ export function StepBirthTime({ value, onChange, onSubmit }: Props) {
         }}
       />
 
-      <FixedBottomCTA onClick={onSubmit} disabled={!valid}>
-        광고보고 결과보기
+      <FixedBottomCTA
+        onClick={onSubmit}
+        disabled={!valid}
+        topAccessory={
+          <div className="cta-disclaimer">
+            광고를 보는 동안 사주를 분석해드릴게요.
+          </div>
+        }
+      >
+        10초 광고보고 결과보기
       </FixedBottomCTA>
     </div>
   );

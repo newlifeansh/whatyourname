@@ -93,15 +93,59 @@
   z-index: 2;
 }
 
-/* 팝콘 캐릭터 등장 영역 — 카피 아래 10px + CTA 위 10px */
-.popcorn-area {
+/* 마키 슬라이드 — 카피 아래 */
+.marquee-area {
   position: absolute;
   left: 0;
   right: 0;
   top: calc((76 + 319 + 0) / 375 * 100vw + 74px + 10px);
-  bottom: 110px; /* 하단 CTA(~100px) + 10px 여백 */
+  bottom: 110px;
   pointer-events: none;
   z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 12px;
+  overflow: hidden;
+}
+
+.marquee-row {
+  overflow: hidden;
+  width: 100%;
+}
+
+.marquee-track {
+  display: flex;
+  gap: 12px;
+  width: max-content;
+}
+
+.marquee-left {
+  animation: marqueeLeft 25s linear infinite;
+}
+
+.marquee-right {
+  animation: marqueeRight 30s linear infinite;
+}
+
+@keyframes marqueeLeft {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes marqueeRight {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
+.marquee-img {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  border-radius: 50%;
+  background: #f2f4f6;
+  padding: 4px;
+  flex-shrink: 0;
 }
 
 @media (min-width: 481px) {
@@ -116,41 +160,12 @@
   .copy {
     top: calc((76 + 319 + 0) / 375 * 480px);
   }
-  .popcorn-area {
+  .marquee-area {
     top: calc((76 + 319 + 0) / 375 * 480px + 74px + 10px);
   }
 }
 
-.pop {
-  position: absolute;
-  object-fit: contain;
-  transform: scale(0);
-  opacity: 0;
-  animation: popIn 2s ease-in-out forwards;
-}
-
-@keyframes popIn {
-  0% {
-    transform: scale(0) translateY(10px);
-    opacity: 0;
-  }
-  20% {
-    transform: scale(1.2) translateY(-6px);
-    opacity: 1;
-  }
-  35% {
-    transform: scale(1) translateY(0);
-    opacity: 1;
-  }
-  75% {
-    transform: scale(1) translateY(0);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(0.4) translateY(8px);
-    opacity: 0;
-  }
-}
+/* (팝콘 제거됨 → 마키 슬라이드로 대체) */
 
 .cta-inner {
   display: inline-flex;
@@ -207,6 +222,14 @@
 .input-placeholder {
   color: #aeb5bc;
   font-weight: 400;
+}
+
+/* ───────── CTA 디스클레이머 ───────── */
+.cta-disclaimer {
+  text-align: center;
+  font-size: 13px;
+  color: #8b95a1;
+  padding: 8px 0 4px;
 }
 
 /* ───────── Step: Fake Input (키패드 방지) ───────── */
@@ -347,6 +370,8 @@
   scrollbar-width: none;
   -ms-overflow-style: none;
   min-width: 0;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
 }
 
 .wheel-col::-webkit-scrollbar {
@@ -363,6 +388,9 @@
   font-variant-numeric: tabular-nums;
   transition: color 0.15s ease;
   white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .wheel-align-left .wheel-item {
@@ -384,7 +412,7 @@
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.4);
-  z-index: 9999;
+  z-index: 99999;
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -690,6 +718,64 @@
 .poke-card-celeb {
   font-size: 13px;
   color: #8b95a1;
+}
+
+/* ── 광고 CTA 카드 ── */
+.poke-card-ad {
+  background: linear-gradient(180deg, #f0f4ff 0%, #fff 60%) !important;
+  border-color: #655dff !important;
+  cursor: pointer;
+  justify-content: center;
+  min-height: 420px;
+}
+
+.poke-ad-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 0;
+}
+
+.poke-ad-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #655dff 0%, #8b82ff 100%);
+  color: #fff;
+  font-size: 32px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.poke-ad-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: #191f28;
+}
+
+.poke-ad-desc {
+  font-size: 15px;
+  color: #8b95a1;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.poke-ad-btn {
+  margin-top: 12px;
+  padding: 12px 28px;
+  background: #655dff;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  border-radius: 12px;
+}
+
+.poke-card-ad:active .poke-ad-btn {
+  background: #4e47cc;
 }
 
 /* 인디케이터 */
