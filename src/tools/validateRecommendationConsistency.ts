@@ -58,6 +58,17 @@ for (const gender of ["male", "female"] as const) {
       const mentionedElement = elementMentionedInReason(recommendation.reason);
       const phoneticElement = recommendation.phoneticExplanationElement;
 
+      if (mentionedElement !== null && recommendation.matchedElement !== mentionedElement) {
+        errors.push(
+          `Card element/reason mismatch for ${recommendation.name.name}-${gender}: card=${recommendation.matchedElement}, reason=${mentionedElement}`,
+        );
+      }
+      if (!sajuTargetsRecommendation(createScenario(weakElement), recommendation.matchedElement)) {
+        errors.push(
+          `Card element is not a target element for ${recommendation.name.name}-${gender}/${weakElement}: ${recommendation.matchedElement}`,
+        );
+      }
+
       if (phoneticElement !== null) {
         const cue = getPhoneticCueForElement(recommendation.name.name, phoneticElement);
         const explanation = getPhoneticExplanation(recommendation.name.name, phoneticElement);
@@ -116,6 +127,10 @@ function getDuplicateRecommendationImages(
   return Array.from(duplicates);
 }
 
+function sajuTargetsRecommendation(saju: SajuResult, element: Element): boolean {
+  return saju.weakElements.includes(element) || saju.elementCounts[element] === 0;
+}
+
 const maxScenario: SajuResult = {
   yearPillar: "甲子",
   monthPillar: "甲子",
@@ -136,6 +151,9 @@ if (!maxRecommendation) {
 } else {
   if (!maxRecommendation.reason.includes(ELEMENT_KO.metal)) {
     errors.push(`Max regression reason mismatch: ${maxRecommendation.reason}`);
+  }
+  if (maxRecommendation.matchedElement !== "metal") {
+    errors.push(`Max regression card element mismatch: ${maxRecommendation.matchedElement}`);
   }
   if (
     maxRecommendation.phoneticExplanationElement !== null
@@ -160,7 +178,11 @@ console.log(
     {
       ok: true,
       checkedScenarios: ELEMENTS.length * 2,
-      regressionChecks: ["reason/phonetic consistency", "Max metal fallback mismatch"],
+      regressionChecks: [
+        "card element/reason consistency",
+        "reason/phonetic consistency",
+        "Max metal fallback mismatch",
+      ],
     },
     null,
     2,

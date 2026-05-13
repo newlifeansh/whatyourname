@@ -219,7 +219,7 @@ export function Result({ input }: Props) {
       {/* 포켓몬 카드 슬라이드 */}
       <div className="poke-slide" ref={scrollRef} onScroll={handleScroll}>
         {visibleNames.map((rec, idx) => {
-          const mainEl = rec.name.elements[0];
+          const mainEl = rec.matchedElement;
           const colors = ELEMENT_COLORS[mainEl];
           const imagePath = getNameImage(rec.name);
           const fitPercent = getSajuFitPercent(rec.score, minFitScore, maxFitScore);

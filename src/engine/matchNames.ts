@@ -9,12 +9,14 @@ export interface NameRecommendation {
   name: EnglishName;
   score: number;
   reason: string;
+  matchedElement: Element;
   phoneticExplanationElement: Element | null;
   evidence: string[];
 }
 
 interface ReasonCandidate {
   text: string;
+  element: Element;
   phoneticElement: Element | null;
 }
 
@@ -48,6 +50,7 @@ export function matchNames(
         weakMatchCount += 1;
         reasons.push({
           text: `비어있는 ${elementKo(zeroEl)}의 기운을 의미로 보완해줘요`,
+          element: zeroEl,
           phoneticElement: null,
         });
       }
@@ -58,11 +61,13 @@ export function matchNames(
         if (matchingCue) {
           reasons.push({
             text: `'${matchingCue.source}' 발음이 비어있는 ${elementKo(zeroEl)}의 기운을 채워줘요`,
+            element: zeroEl,
             phoneticElement: zeroEl,
           });
         } else {
           reasons.push({
             text: `이름의 발음이 비어있는 ${elementKo(zeroEl)}의 기운을 채워줘요`,
+            element: zeroEl,
             phoneticElement: null,
           });
         }
@@ -77,6 +82,7 @@ export function matchNames(
         weakMatchCount += 1;
         reasons.push({
           text: `부족한 ${elementKo(weakEl)}의 기운을 보완해줘요`,
+          element: weakEl,
           phoneticElement: null,
         });
       }
@@ -88,11 +94,13 @@ export function matchNames(
         if (matchingCue) {
           reasons.push({
             text: `'${matchingCue.source}' 발음이 부족한 ${elementKo(weakEl)}의 기운을 보충해요`,
+            element: weakEl,
             phoneticElement: weakEl,
           });
         } else {
           reasons.push({
             text: `이름의 발음이 부족한 ${elementKo(weakEl)}의 기운을 보충해요`,
+            element: weakEl,
             phoneticElement: null,
           });
         }
@@ -109,6 +117,7 @@ export function matchNames(
       if (reasons.length === 0) {
         reasons.push({
           text: `${elementKo(saju.dayStemElement)} 일간과 조화로운 ${elementKo(helpingEl)}의 에너지`,
+          element: helpingEl,
           phoneticElement: null,
         });
       }
@@ -149,6 +158,7 @@ export function matchNames(
 
     const primaryReason = reasons[0] ?? {
       text: "당신의 사주와 잘 어울려요",
+      element: saju.weakElements[0] ?? helpingEl,
       phoneticElement: null,
     };
     const evidence = Array.from(new Set(reasons.map((reason) => reason.text))).slice(0, 3);
@@ -157,6 +167,7 @@ export function matchNames(
       name,
       score,
       reason: primaryReason.text,
+      matchedElement: primaryReason.element,
       phoneticExplanationElement: primaryReason.phoneticElement,
       evidence,
     };
