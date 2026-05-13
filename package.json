@@ -1,14 +1,25 @@
 {
   "name": "english-saju",
   "private": true,
-  "version": "0.1.0",
+  "version": "1.5.0",
   "type": "module",
   "scripts": {
     "dev": "granite dev",
-    "build": "ait build",
-    "deploy": "ait deploy",
+    "prebuild": "npm run validate:content && npm run validate:recommendations",
+    "build": "ait build && npm run artifact:version",
+    "artifact:version": "node ./scripts/version-ait-artifact.mjs",
+    "deploy": "AIT_CHANNEL=deploy npm run build && ait deploy --location ./releases/whatyourname-v$npm_package_version-deploy.ait",
+    "deploy:dev": "AIT_CHANNEL=dev npm run build && ait deploy --profile dev --location ./releases/whatyourname-v$npm_package_version-dev.ait",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "typecheck": "tsc -b",
+    "audit:names": "node --import tsx ./src/tools/auditNameDb.ts",
+    "export:character-prompts": "node --import tsx ./src/tools/exportCharacterPrompts.ts",
+    "export:name-image-map": "node --import tsx ./src/tools/exportNameImageMap.ts",
+    "sync:name-images": "node --import tsx ./src/tools/syncNameImageManifest.ts",
+    "report:name-images": "node --import tsx ./src/tools/reportNameImageCoverage.ts",
+    "validate:content": "node --import tsx ./src/tools/validateContent.ts",
+    "validate:recommendations": "node --import tsx ./src/tools/validateRecommendationConsistency.ts"
   },
   "dependencies": {
     "@apps-in-toss/web-framework": "^2.4.7",
@@ -31,6 +42,7 @@
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^15.15.0",
     "prettier": "^3.4.2",
+    "tsx": "^4.21.0",
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.24.1",
     "vite": "^6.2.0"

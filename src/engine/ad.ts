@@ -63,3 +63,15 @@ export function showInterstitialAd(onDone: () => void) {
 export function showUnlockAd(onDone: () => void) {
   showAd(AD_UNLOCK, onDone);
 }
+
+export function showInterstitialAdAsync(): Promise<void> {
+  return new Promise((resolve) => {
+    showInterstitialAd(resolve);
+  });
+}
+
+export function showUnlockAdAsync(): Promise<void> {
+  return new Promise((resolve) => {
+    showUnlockAd(resolve);
+  });
+}

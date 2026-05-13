@@ -19,7 +19,7 @@ const CONSONANT_ELEMENT: Record<string, Element> = {
   Q: "wood", // Q는 K 발음
 
   // 火(fire) — ㄴ,ㄷ,ㅌ,ㄹ 계열
-  N: "wood" === "wood" ? "fire" : "fire", // N=ㄴ
+  N: "fire", // N=ㄴ
   D: "fire", // D=ㄷ
   T: "fire", // T=ㅌ
   L: "fire", // L=ㄹ
@@ -58,56 +58,102 @@ const DIGRAPH_ELEMENT: Record<string, Element> = {
   WH: "water", // W 계열
 };
 
+export interface PhoneticCue {
+  source: string;
+  element: Element;
+  isPrimary: boolean;
+}
+
+const VOWELS = new Set(["A", "E", "I", "O", "U"]);
+
+function normalizeName(name: string): string {
+  return name.toUpperCase().replace(/[^A-Z]/g, "");
+}
+
+function getInitialCue(upper: string): PhoneticCue | null {
+  const firstTwo = upper.slice(0, 2);
+  if (DIGRAPH_ELEMENT[firstTwo]) {
+    return { source: firstTwo, element: DIGRAPH_ELEMENT[firstTwo], isPrimary: true };
+  }
+
+  const first = upper[0];
+  if (!first || !CONSONANT_ELEMENT[first]) return null;
+
+  return { source: first, element: CONSONANT_ELEMENT[first], isPrimary: true };
+}
+
+export function getPhoneticCues(name: string): PhoneticCue[] {
+  const upper = normalizeName(name);
+  if (!upper) return [];
+
+  const cues: PhoneticCue[] = [];
+  const primaryCue = getInitialCue(upper);
+  if (primaryCue) {
+    cues.push(primaryCue);
+  }
+
+  let index = primaryCue?.source.length ?? 1;
+  while (index < upper.length) {
+    const pair = upper.slice(index, index + 2);
+    if (DIGRAPH_ELEMENT[pair]) {
+      cues.push({ source: pair, element: DIGRAPH_ELEMENT[pair], isPrimary: false });
+      index += 2;
+      continue;
+    }
+
+    const letter = upper[index];
+    if (CONSONANT_ELEMENT[letter] && !VOWELS.has(letter)) {
+      cues.push({ source: letter, element: CONSONANT_ELEMENT[letter], isPrimary: false });
+    }
+    index += 1;
+  }
+
+  return cues;
+}
+
 /**
  * 영어 이름에서 발음 기반 오행을 추출
  * 첫 글자(초성) + 중간 핵심 자음들 분석
  */
 export function getPhoneticElements(name: string): Element[] {
-  const upper = name.toUpperCase();
-  const elements: Set<Element> = new Set();
+  const cues = getPhoneticCues(name);
+  if (cues.length === 0) return [];
 
-  // 1. 첫 소리 (가장 중요)
-  const firstTwo = upper.slice(0, 2);
-  if (DIGRAPH_ELEMENT[firstTwo]) {
-    elements.add(DIGRAPH_ELEMENT[firstTwo]);
-  } else if (CONSONANT_ELEMENT[upper[0]]) {
-    elements.add(CONSONANT_ELEMENT[upper[0]]);
-  }
+  const elements: Element[] = [cues[0].element];
 
-  // 2. 이름 내 주요 자음들에서 추가 오행 (2번째로 강한 오행)
-  const consonants = upper.split("").filter((ch) => !"AEIOU".includes(ch));
-  // 첫 자음 제외하고 나머지에서 빈도 높은 오행
+  // 이름 내 주요 자음들에서 추가 오행 (2번째로 강한 오행)
   const counts: Record<Element, number> = {
     wood: 0, fire: 0, earth: 0, metal: 0, water: 0,
   };
-  for (let i = 1; i < consonants.length; i++) {
-    const el = CONSONANT_ELEMENT[consonants[i]];
-    if (el) counts[el]++;
-  }
-  // 가장 빈도 높은 오행을 2차 오행으로 추가
-  const sorted = (Object.entries(counts) as [Element, number][])
-    .filter(([el]) => !elements.has(el))
-    .sort((a, b) => b[1] - a[1]);
-  if (sorted.length > 0 && sorted[0][1] > 0) {
-    elements.add(sorted[0][0]);
+  for (const cue of cues.slice(1)) {
+    counts[cue.element]++;
   }
 
-  return Array.from(elements);
+  const sorted = (Object.entries(counts) as [Element, number][])
+    .filter(([el]) => !elements.includes(el))
+    .sort((a, b) => b[1] - a[1]);
+  if (sorted.length > 0 && sorted[0][1] > 0) {
+    elements.push(sorted[0][0]);
+  }
+
+  return elements;
+}
+
+export function getPhoneticCueForElement(
+  name: string,
+  targetElement: Element,
+): PhoneticCue | null {
+  const cues = getPhoneticCues(name);
+  return cues.find((cue) => cue.element === targetElement) ?? null;
 }
 
 /**
  * 발음 오행 한글 설명 생성
  */
-export function getPhoneticExplanation(name: string): string {
-  const upper = name.toUpperCase();
-  const firstLetter = upper[0];
-  const firstTwo = upper.slice(0, 2);
-
-  let sound = firstLetter;
-  if (DIGRAPH_ELEMENT[firstTwo]) {
-    sound = firstTwo;
-  }
-
+export function getPhoneticExplanation(
+  name: string,
+  targetElement?: Element | null,
+): string {
   const elementMap: Record<Element, string> = {
     wood: "목(木)",
     fire: "화(火)",
@@ -116,9 +162,10 @@ export function getPhoneticExplanation(name: string): string {
     water: "수(水)",
   };
 
-  const elements = getPhoneticElements(name);
-  if (elements.length === 0) return "";
+  const cue = targetElement
+    ? getPhoneticCueForElement(name, targetElement) ?? getPhoneticCues(name)[0]
+    : getPhoneticCues(name)[0];
+  if (!cue) return "";
 
-  const primary = elementMap[elements[0]];
-  return `'${sound}' 발음은 ${primary}의 기운을 가져요`;
+  return `'${cue.source}' 발음은 ${elementMap[cue.element]}의 기운을 가져요`;
 }

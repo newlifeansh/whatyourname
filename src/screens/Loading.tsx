@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { showInterstitialAdAsync } from "../engine/ad";
 
 const MESSAGES = [
   "오행의 균형을 확인하고 있어요...",
@@ -21,6 +22,8 @@ export function Loading({ onDone }: Props) {
     const duration = 5000;
     const startProgress = 0.8;
     const start = Date.now();
+    let adCompleted = false;
+    let timerCompleted = false;
     let finished = false;
 
     const finish = () => {
@@ -29,6 +32,12 @@ export function Loading({ onDone }: Props) {
       setProgress(1);
       setMsgIdx(MESSAGES.length - 1);
       onDoneRef.current();
+    };
+
+    const tryFinish = () => {
+      if (adCompleted && timerCompleted) {
+        finish();
+      }
     };
 
     const timer = setInterval(() => {
@@ -40,20 +49,28 @@ export function Loading({ onDone }: Props) {
 
       if (pct >= 1) {
         clearInterval(timer);
-        finish();
+        timerCompleted = true;
+        tryFinish();
       }
     }, 100);
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible" && Date.now() - start >= duration) {
         clearInterval(timer);
-        finish();
+        timerCompleted = true;
+        tryFinish();
       }
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
+    showInterstitialAdAsync().finally(() => {
+      adCompleted = true;
+      tryFinish();
+    });
+
     return () => {
+      finished = true;
       clearInterval(timer);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };

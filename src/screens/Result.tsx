@@ -3,32 +3,12 @@ import html2canvas from "html2canvas";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { showUnlockAd } from "../engine/ad";
 import { trackEvent } from "../engine/analytics";
+import { getNameImage } from "../engine/nameImage";
 import { matchNames } from "../engine/matchNames";
 import { getPhoneticExplanation } from "../engine/phonetic";
 import type { Element } from "../engine/saju";
 import { ELEMENT_NAMES, ELEMENT_TRAITS, calculateSaju } from "../engine/saju";
 import type { SajuInput } from "../types";
-
-const MALE_EMOJIS = [
-  "img5.png", "img6.png", "img7.png", "img8.png", "img9.png",
-  "img10.png", "img11.png", "img13.png", "img14.png", "img15.png",
-  "img16.png", "img17.png", "img18.png", "img19.png", "img21.png",
-  "img22.png", "img23.png", "img24.png", "img25.png", "img26.png",
-  "img27.png", "img28.png", "img64.png", "img65.png", "img66.png",
-  "img67.png", "img75.png", "img91.png",
-];
-
-const FEMALE_EMOJIS = [
-  "img29.png", "img30.png", "img31.png", "img32.png", "img33.png",
-  "img34.png", "img35.png", "img36.png", "img37.png", "img38.png",
-  "img39.png", "img40.png", "img41.png", "img42.png", "img43.png",
-  "img44.png", "img45.png", "img46.png", "img47.png", "img48.png",
-  "img49.png", "img50.png", "img60.png", "img61.png", "img62.png",
-  "img63.png", "img70.png", "img71.png", "img80.png", "img81.png",
-  "img82.png", "img83.png", "img84.png", "img92.png", "img93.png",
-  "img100.png", "img101.png", "img105.png", "img106.png", "img107.png",
-  "img108.png", "img109.png",
-];
 
 const ELEMENT_COLORS: Record<Element, { bg: string; accent: string; light: string }> = {
   wood: { bg: "#f0fdf4", accent: "#22c55e", light: "#bbf7d0" },
@@ -46,10 +26,13 @@ const ELEMENT_EMOJI: Record<Element, string> = {
   water: "💧",
 };
 
-function pickEmoji(seed: number, idx: number, gender: "male" | "female"): string {
-  const pool = gender === "male" ? MALE_EMOJIS : FEMALE_EMOJIS;
-  const i = ((seed * 7 + idx * 13 + 3) % pool.length + pool.length) % pool.length;
-  return pool[i];
+const NAME_IMAGE_VERSION = "20260513";
+
+function getSajuFitPercent(score: number, minScore: number, maxScore: number) {
+  if (maxScore <= minScore) return 90;
+
+  const normalizedScore = (score - minScore) / (maxScore - minScore);
+  return Math.round(76 + normalizedScore * 19);
 }
 
 interface Props {
@@ -66,14 +49,15 @@ export function Result({ input }: Props) {
   const result = useMemo(() => {
     const saju = calculateSaju(input.birthDate, input.birthTime);
     const names = matchNames(saju, input.gender!);
-    const seed = Number(input.birthDate) || 42;
-    return { saju, names, seed };
+    return { saju, names };
   }, [input]);
 
-  const { saju, names, seed } = result;
+  const { saju, names } = result;
 
   // 현재 표시할 이름 목록: 처음 3개 또는 잠금 해제 시 전체 10개
   const visibleNames = unlocked ? names : names.slice(0, 3);
+  const maxFitScore = names[0]?.score ?? 0;
+  const minFitScore = names[names.length - 1]?.score ?? maxFitScore;
   // 전체 슬라이드 수: 이름 카드 + (잠금 해제 전이면 광고CTA 1장)
   const totalSlides = unlocked ? visibleNames.length : visibleNames.length + 1;
 
@@ -107,6 +91,20 @@ export function Result({ input }: Props) {
       setUnlocked(true);
     });
   }, []);
+
+  const textOnlyShare = useCallback(() => {
+    const text = `사주 분석 결과, 나에게 어울리는 영어이름은 "${names[0]?.name.name}"이래요! 너도 해봐 👉\n`;
+    if (navigator.share) {
+      navigator.share({
+        title: "와츄어네임 - 사주로 찾는 나만의 영어이름",
+        text,
+        url: window.location.href,
+      }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(`${text} ${window.location.href}`).catch(() => {});
+      alert("링크가 복사됐어요! 친구에게 보내주세요.");
+    }
+  }, [names]);
 
   // 1순위 카드 이미지 생성 후 공유
   const handleShare = useCallback(async () => {
@@ -178,21 +176,7 @@ export function Result({ input }: Props) {
     } finally {
       setSharing(false);
     }
-  }, [trackData, names]);
-
-  function textOnlyShare() {
-    const text = `사주 분석 결과, 나에게 어울리는 영어이름은 "${names[0]?.name.name}"이래요! 너도 해봐 👉\n`;
-    if (navigator.share) {
-      navigator.share({
-        title: "와츄어네임 - 사주로 찾는 나만의 영어이름",
-        text,
-        url: window.location.href,
-      }).catch(() => {});
-    } else {
-      navigator.clipboard.writeText(`${text} ${window.location.href}`);
-      alert("링크가 복사됐어요! 친구에게 보내주세요.");
-    }
-  }
+  }, [trackData, names, textOnlyShare]);
 
   return (
     <div className="step">
@@ -237,7 +221,11 @@ export function Result({ input }: Props) {
         {visibleNames.map((rec, idx) => {
           const mainEl = rec.name.elements[0];
           const colors = ELEMENT_COLORS[mainEl];
-          const emoji = pickEmoji(seed, idx, input.gender!);
+          const imagePath = getNameImage(rec.name);
+          const fitPercent = getSajuFitPercent(rec.score, minFitScore, maxFitScore);
+          const phoneticExplanation = rec.phoneticExplanationElement
+            ? getPhoneticExplanation(rec.name.name, rec.phoneticExplanationElement)
+            : "";
 
           return (
             <div
@@ -266,7 +254,7 @@ export function Result({ input }: Props) {
                   style={{ borderColor: colors.light }}
                 >
                   <img
-                    src={`${import.meta.env.BASE_URL}Result/${emoji}`}
+                    src={`${import.meta.env.BASE_URL}${imagePath}?v=${NAME_IMAGE_VERSION}`}
                     alt=""
                     className="poke-card-avatar-img"
                   />
@@ -276,6 +264,9 @@ export function Result({ input }: Props) {
               {/* 이름 */}
               <div className="poke-card-name">{rec.name.name}</div>
               <div className="poke-card-pron">{rec.name.pronunciation}</div>
+              <div className="poke-card-fit" style={{ color: colors.accent }}>
+                사주 적합도 {fitPercent}%
+              </div>
 
               {/* 구분선 */}
               <div className="poke-card-divider" style={{ borderColor: colors.light }} />
@@ -286,9 +277,20 @@ export function Result({ input }: Props) {
                 <div className="poke-card-reason" style={{ color: colors.accent }}>
                   {rec.reason}
                 </div>
-                <div className="poke-card-phonetic">
-                  {getPhoneticExplanation(rec.name.name)}
-                </div>
+                {rec.evidence.length > 1 ? (
+                  <div className="poke-card-evidence-list">
+                    {rec.evidence.slice(1).map((evidence) => (
+                      <div key={evidence} className="poke-card-evidence-item">
+                        {evidence}
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+                {phoneticExplanation ? (
+                  <div className="poke-card-phonetic">
+                    {phoneticExplanation}
+                  </div>
+                ) : null}
               </div>
 
               {/* 하단 */}

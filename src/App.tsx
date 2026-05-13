@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { graniteEvent } from "@apps-in-toss/web-framework";
+import { useEffect, useRef, useState } from "react";
 import "./App.css";
-import { showInterstitialAd } from "./engine/ad";
 import { Landing } from "./screens/Landing";
 import { Loading } from "./screens/Loading";
 import { Result } from "./screens/Result";
@@ -25,10 +25,10 @@ function App() {
 
   // 뒤로가기 처리
   useEffect(() => {
-    try {
-      const { graniteEvent } = require("@apps-in-toss/web-framework");
-      if (!graniteEvent?.addEventListener) return;
+    if (!graniteEvent?.addEventListener) return;
+    if (typeof window !== "undefined" && !("ReactNativeWebView" in window)) return;
 
+    try {
       const unsubscribe = graniteEvent.addEventListener("backEvent", {
         onEvent: () => {
           const currentStep = stepRef.current;
@@ -47,14 +47,8 @@ function App() {
 
       return unsubscribe;
     } catch {
-      // 웹 환경에서는 graniteEvent 미지원 → 무시
+      return;
     }
-  }, []);
-
-  const handleAdThenLoading = useCallback(() => {
-    showInterstitialAd(() => {
-      setStep("loading");
-    });
   }, []);
 
   switch (step) {
@@ -81,7 +75,7 @@ function App() {
         <StepBirthTime
           value={input.birthTime}
           onChange={(v) => setInput((i) => ({ ...i, birthTime: v }))}
-          onSubmit={handleAdThenLoading}
+          onSubmit={() => setStep("loading")}
         />
       );
     case "loading":
