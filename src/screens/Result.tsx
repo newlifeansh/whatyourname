@@ -68,7 +68,7 @@ export function Result({ input }: Props) {
       name1: names[0]?.name.name ?? "",
       name2: names[1]?.name.name ?? "",
       name3: names[2]?.name.name ?? "",
-      weakElements: saju.weakElements.map((el) => ELEMENT_NAMES[el]).join(", "),
+      yongshinElements: saju.yongshinElements.map((el) => ELEMENT_NAMES[el]).join(", "),
     }),
     [input, names, saju],
   );
@@ -208,10 +208,9 @@ export function Result({ input }: Props) {
             </div>
           ))}
         </div>
-        {saju.weakElements.length > 0 && (
+        {saju.yongshinElements.length > 0 && (
           <div className="saju-weak-msg">
-            {saju.weakElements.map((el) => ELEMENT_NAMES[el]).join(", ")}의
-            기운이 부족해요
+            용신은 {saju.yongshinElements.map((el) => ELEMENT_NAMES[el]).join(", ")}이에요
           </div>
         )}
       </div>
@@ -330,13 +329,13 @@ export function Result({ input }: Props) {
       </div>
 
       {/* 오행 설명 */}
-      {saju.weakElements.length > 0 && (
+      {saju.yongshinElements.length > 0 && (
         <div className="element-tip">
           <div className="element-tip-title">
-            {ELEMENT_NAMES[saju.weakElements[0]]}이란?
+            용신 {ELEMENT_NAMES[saju.yongshinElements[0]]}이란?
           </div>
           <div className="element-tip-desc">
-            {ELEMENT_TRAITS[saju.weakElements[0]]}를 의미해요. 이 기운을 가진
+            {ELEMENT_TRAITS[saju.yongshinElements[0]]}를 의미해요. 이 기운을 가진
             이름을 사용하면 삶의 균형을 맞추는 데 도움이 될 수 있어요.
           </div>
         </div>
