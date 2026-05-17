@@ -173,6 +173,14 @@
   gap: 8px;
 }
 
+.promotion-disclaimer {
+  color: #6b7684;
+  font-size: 12px;
+  line-height: 1.4;
+  padding: 0 20px 8px;
+  text-align: center;
+}
+
 .flag {
   font-size: 20px;
 }
@@ -839,4 +847,29 @@
   font-size: 14px;
   color: #4e5968;
   line-height: 1.5;
+}
+
+.promotion-result {
+  margin: 0 24px 24px;
+  border-radius: 14px;
+  padding: 14px 16px;
+  background: #f2f4f6;
+  color: #4e5968;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.promotion-result-success,
+.promotion-result-already_granted {
+  background: #eff6ff;
+  color: #3182f6;
+}
+
+.promotion-result-not_running,
+.promotion-result-error,
+.promotion-result-unsupported {
+  background: #fff4e5;
+  color: #b76e00;
 }

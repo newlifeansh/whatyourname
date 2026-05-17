@@ -7,6 +7,8 @@
     "dev": "granite dev",
     "prebuild": "npm run validate:content && npm run validate:recommendations",
     "build": "ait build && npm run artifact:version",
+    "build:promotion-test": "VITE_PROMOTION_CODE=TEST_01KRQ3WWBZ63AYS60ZKYYPPZQF npm run build",
+    "build:promotion-prod": "VITE_PROMOTION_CODE=01KRQ3WWBZ63AYS60ZKYYPPZQF npm run build",
     "artifact:version": "node ./scripts/version-ait-artifact.mjs",
     "deploy": "AIT_CHANNEL=deploy npm run build && ait deploy --location ./releases/whatyourname-v$npm_package_version-deploy.ait",
     "deploy:dev": "AIT_CHANNEL=dev npm run build && ait deploy --profile dev --location ./releases/whatyourname-v$npm_package_version-dev.ait",

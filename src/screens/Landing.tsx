@@ -67,7 +67,14 @@ export function Landing({ onStart }: Props) {
         </div>
       </div>
 
-      <FixedBottomCTA onClick={onStart}>
+      <FixedBottomCTA
+        onClick={onStart}
+        topAccessory={
+          <div className="promotion-disclaimer">
+            결과 확인 시 토스 포인트 5원이 즉시 지급돼요. 예산 소진 시 사전 고지 없이 종료될 수 있어요.
+          </div>
+        }
+      >
         <span className="cta-inner">
           <span className="flag" role="img" aria-label="미국">
             🇺🇸

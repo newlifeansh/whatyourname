@@ -6,6 +6,10 @@ import { trackEvent } from "../engine/analytics";
 import { getNameImage } from "../engine/nameImage";
 import { matchNames } from "../engine/matchNames";
 import { getPhoneticExplanation } from "../engine/phonetic";
+import {
+  grantResultPromotionReward,
+  type PromotionRewardResult,
+} from "../engine/promotion";
 import type { Element } from "../engine/saju";
 import { ELEMENT_NAMES, ELEMENT_TRAITS, calculateSaju } from "../engine/saju";
 import type { SajuInput } from "../types";
@@ -43,6 +47,7 @@ export function Result({ input }: Props) {
   const [currentCard, setCurrentCard] = useState(0);
   const [unlocked, setUnlocked] = useState(false);
   const [sharing, setSharing] = useState(false);
+  const [promotionReward, setPromotionReward] = useState<PromotionRewardResult | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
 
@@ -76,6 +81,19 @@ export function Result({ input }: Props) {
   useEffect(() => {
     trackEvent({ ...trackData, event: "view" });
   }, [trackData]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    grantResultPromotionReward().then((result) => {
+      if (!mounted || result.status === "skipped") return;
+      setPromotionReward(result);
+    });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const handleScroll = () => {
     const el = scrollRef.current;
@@ -341,6 +359,12 @@ export function Result({ input }: Props) {
           </div>
         </div>
       )}
+
+      {promotionReward ? (
+        <div className={`promotion-result promotion-result-${promotionReward.status}`}>
+          {promotionReward.message}
+        </div>
+      ) : null}
 
       <FixedBottomCTA onClick={handleShare} disabled={sharing}>
         {sharing ? "이미지 생성 중..." : "친구에게 공유하기"}
