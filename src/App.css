@@ -181,6 +181,44 @@
   text-align: center;
 }
 
+.landing-reward-banner {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+  z-index: 20;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border: 1px solid #d8e7ff;
+  border-radius: 16px;
+  background: rgba(245, 250, 255, 0.96);
+  box-shadow: 0 12px 28px rgba(49, 130, 246, 0.14);
+  color: #4e5968;
+  text-align: center;
+  backdrop-filter: blur(8px);
+}
+
+.landing-reward-banner strong {
+  color: #1b64da;
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.landing-reward-banner span {
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+@media (min-width: 481px) {
+  .landing-reward-banner {
+    left: calc(50% - 240px + 16px);
+    right: calc(50% - 240px + 16px);
+  }
+}
+
 .flag {
   font-size: 20px;
 }
