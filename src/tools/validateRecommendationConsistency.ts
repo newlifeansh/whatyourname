@@ -34,6 +34,7 @@ function createScenario(weakElement: Element): SajuResult {
     },
     weakElements: [weakElement],
     strongElements: ["metal"],
+    yongshinElements: [weakElement],
   };
 }
 
@@ -128,7 +129,7 @@ function getDuplicateRecommendationImages(
 }
 
 function sajuTargetsRecommendation(saju: SajuResult, element: Element): boolean {
-  return saju.weakElements.includes(element) || saju.elementCounts[element] === 0;
+  return saju.yongshinElements.includes(element);
 }
 
 const maxScenario: SajuResult = {
@@ -141,6 +142,7 @@ const maxScenario: SajuResult = {
   elementCounts: { wood: 4, fire: 2, earth: 2, metal: 0, water: 0 },
   weakElements: ["metal", "water"],
   strongElements: ["wood"],
+  yongshinElements: ["metal", "water"],
 };
 const maxRecommendation = matchNames(maxScenario, "male").find(
   (recommendation) => recommendation.name.name === "Max",

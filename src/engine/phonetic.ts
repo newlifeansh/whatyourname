@@ -3,12 +3,12 @@ import type { Element } from "./saju";
 /**
  * 영어 이름의 첫 발음(초성)을 기반으로 오행을 매핑
  *
- * 한국 작명학 초성 오행:
+ * 훈민정음 해례본 기준 초성 오행:
  *   ㄱ,ㅋ = 木(wood)  → K, G, C(hard)
  *   ㄴ,ㄷ,ㅌ,ㄹ = 火(fire) → N, D, T, L, R
- *   ㅇ,ㅎ = 土(earth) → vowel(A,E,I,O,U), H
+ *   ㅁ,ㅂ,ㅍ = 土(earth) → M, B, P, F, V, W
  *   ㅅ,ㅈ,ㅊ = 金(metal) → S, J, Ch, Z, X
- *   ㅁ,ㅂ,ㅍ = 水(water) → M, B, P, F, V, W
+ *   ㅇ,ㅎ = 水(water) → vowel(A,E,I,O,U), H
  */
 
 const CONSONANT_ELEMENT: Record<string, Element> = {
@@ -25,28 +25,28 @@ const CONSONANT_ELEMENT: Record<string, Element> = {
   L: "fire", // L=ㄹ
   R: "fire", // R=ㄹ
 
-  // 土(earth) — ㅇ,ㅎ 계열
-  A: "earth",
-  E: "earth",
-  I: "earth",
-  O: "earth",
-  U: "earth",
-  H: "earth",
-  Y: "earth", // Y는 모음 성격
+  // 土(earth) — ㅁ,ㅂ,ㅍ 계열
+  M: "earth",
+  B: "earth",
+  P: "earth",
+  F: "earth",
+  V: "earth",
+  W: "earth",
+
+  // 水(water) — ㅇ,ㅎ 계열
+  A: "water",
+  E: "water",
+  I: "water",
+  O: "water",
+  U: "water",
+  H: "water",
+  Y: "water", // Y는 반모음/이응 계열로 처리
 
   // 金(metal) — ㅅ,ㅈ,ㅊ 계열
   S: "metal",
   J: "metal",
   Z: "metal",
   X: "metal",
-
-  // 水(water) — ㅁ,ㅂ,ㅍ 계열
-  M: "water",
-  B: "water",
-  P: "water",
-  F: "water",
-  V: "water",
-  W: "water",
 };
 
 // 특수 2글자 조합 (Ch, Sh, Th 등)
@@ -54,8 +54,8 @@ const DIGRAPH_ELEMENT: Record<string, Element> = {
   CH: "metal", // ㅊ
   SH: "metal", // ㅅ
   TH: "fire",  // ㄷ 계열
-  PH: "water", // ㅍ → F 발음
-  WH: "water", // W 계열
+  PH: "earth", // ㅍ → F 발음
+  WH: "earth", // W 계열
 };
 
 export interface PhoneticCue {

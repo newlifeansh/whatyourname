@@ -52,7 +52,42 @@ export interface SajuResult {
 
   // 강한 오행
   strongElements: Element[];
+
+  // 용신 후보 오행 (이름 추천에 우선 적용)
+  yongshinElements: Element[];
 }
+
+const GENERATES: Record<Element, Element> = {
+  wood: "fire",
+  fire: "earth",
+  earth: "metal",
+  metal: "water",
+  water: "wood",
+};
+
+const GENERATED_BY: Record<Element, Element> = {
+  wood: "water",
+  fire: "wood",
+  earth: "fire",
+  metal: "earth",
+  water: "metal",
+};
+
+const CONTROLS: Record<Element, Element> = {
+  wood: "earth",
+  fire: "metal",
+  earth: "water",
+  metal: "wood",
+  water: "fire",
+};
+
+const CONTROLLED_BY: Record<Element, Element> = {
+  wood: "metal",
+  fire: "water",
+  earth: "wood",
+  metal: "fire",
+  water: "earth",
+};
 
 export function calculateSaju(
   birthDate: string, // YYYYMMDD
@@ -117,6 +152,11 @@ export function calculateSaju(
   const strongElements = counts
     .filter(([, c]) => c === maxCount)
     .map(([el]) => el);
+  const yongshinElements = getYongshinElements({
+    dayStemElement,
+    elementCounts,
+    strongElements,
+  });
 
   return {
     yearPillar,
@@ -128,7 +168,37 @@ export function calculateSaju(
     elementCounts,
     weakElements,
     strongElements,
+    yongshinElements,
   };
+}
+
+function getYongshinElements({
+  dayStemElement,
+  elementCounts,
+  strongElements,
+}: {
+  dayStemElement: Element;
+  elementCounts: Record<Element, number>;
+  strongElements: Element[];
+}): Element[] {
+  const total = Object.values(elementCounts).reduce((sum, count) => sum + count, 0);
+  const average = total / 5;
+  const dayCount = elementCounts[dayStemElement];
+  const dayMasterIsWeak = dayCount <= average;
+
+  const baseCandidates = dayMasterIsWeak
+    ? [GENERATED_BY[dayStemElement], dayStemElement]
+    : [GENERATES[dayStemElement], CONTROLLED_BY[dayStemElement], CONTROLS[dayStemElement]];
+  const candidates = baseCandidates.filter((el) => !strongElements.includes(el));
+  const fallbackCandidates = candidates.length > 0 ? candidates : baseCandidates;
+
+  return Array.from(new Set(fallbackCandidates))
+    .sort((a, b) => {
+      const countDiff = elementCounts[a] - elementCounts[b];
+      if (countDiff !== 0) return countDiff;
+      return baseCandidates.indexOf(a) - baseCandidates.indexOf(b);
+    })
+    .slice(0, 2);
 }
 
 // 오행 한글 이름

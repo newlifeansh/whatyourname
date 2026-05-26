@@ -7,7 +7,7 @@ interface TrackData {
   name1: string;
   name2: string;
   name3: string;
-  weakElements: string;
+  yongshinElements: string;
   event: "view" | "share";
 }
 

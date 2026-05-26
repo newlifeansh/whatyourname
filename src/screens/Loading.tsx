@@ -3,7 +3,7 @@ import { showInterstitialAdAsync } from "../engine/ad";
 
 const MESSAGES = [
   "오행의 균형을 확인하고 있어요...",
-  "부족한 기운을 찾고 있어요...",
+  "용신 기운을 찾고 있어요...",
   "어울리는 영어이름을 매칭하고 있어요...",
   "거의 다 됐어요!",
 ];
